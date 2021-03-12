@@ -1,0 +1,186 @@
+﻿Build1=Default,four.season
+File1=120175742_106629887866329_2782950783998466076_n.png
+File10=logo.png
+File11=main_page.bal
+File12=main_profile.bal
+File13=profile.bal
+File14=ViewDetails.bal
+File2=adma.mp3
+File3=bg.jpg
+File4=bg2.jpg
+File5=crysta.ttf
+File6=get_order.bal
+File7=GridRow.bal
+File8=icon.png
+File9=login.bal
+FileGroup1=Default Group
+FileGroup10=Default Group
+FileGroup11=Default Group
+FileGroup12=Default Group
+FileGroup13=Default Group
+FileGroup14=Default Group
+FileGroup2=Default Group
+FileGroup3=Default Group
+FileGroup4=Default Group
+FileGroup5=New Group
+FileGroup6=Default Group
+FileGroup7=Default Group
+FileGroup8=Default Group
+FileGroup9=Default Group
+Group=Default Group
+Library1=administrator
+Library10=javaobject
+Library11=jdbcsql
+Library12=json
+Library13=navigation
+Library14=phone
+Library15=randomaccessfile
+Library16=runtimepermissions
+Library17=stringutils
+Library18=xcustomlistview
+Library19=xui
+Library2=audio
+Library20=colordialog
+Library3=b4xcollections
+Library4=bottomnavigation
+Library5=core
+Library6=dguid
+Library7=gps
+Library8=http
+Library9=httputils2
+ManifestCode='This code will be applied to the manifest file during compilation.~\n~'You do not need to modify it in most cases.~\n~'See this link for for more information: https://www.b4x.com/forum/showthread.php?p=78136~\n~AddManifestText(~\n~<uses-sdk android:minSdkVersion="24" android:targetSdkVersion="24"/>~\n~<supports-screens android:largeScreens="true" ~\n~    android:normalScreens="true" ~\n~    android:smallScreens="true" ~\n~    android:anyDensity="true"/>~\n~	<uses-permission~\n~  android:name="android.permission.ACCESS_FINE_LOCATION"/>~\n~)~\n~SetApplicationAttribute(android:icon, "@drawable/icon")~\n~SetApplicationAttribute(android:label, "$LABEL$")~\n~~\n~~\n~'End of default text.~\n~
+Module1=get_order
+Module2=main_page
+Module3=|relative|..\main_profile
+Module4=my_profile
+Module5=player
+Module6=Starter
+Module7=ViewDetails
+NumberOfFiles=14
+NumberOfLibraries=20
+NumberOfModules=7
+Version=10.6
+@EndOfDesignText@
+#Region  Project Attributes 
+	#ApplicationLabel:FOUR SEASON DELEVARY
+	#VersionCode: 1
+	#VersionName: 
+	'SupportedOrientations possible values: unspecified, landscape or portrait.
+	#SupportedOrientations: portrait
+	#CanInstallToExternalStorage: False
+	#BridgeLogger: True
+#End Region
+#Region  Activity Attributes 
+    #AdditionalJar: jtds-1.3.1
+    '#AdditionalJar: mssql-jdbc-6.4.0.jre8
+	#FullScreen: True
+	#IncludeTitle: false
+#End Region
+Sub Process_Globals
+'	Public mysql As JdbcSQL
+'	Public driver As String = "net.sourceforge.jtds.jdbc.Driver"
+'	Public jdbcUrl As String = "jdbc:jtds:sqlserver://46.185.131.141;DatabaseName=doortodoor"
+'	Public Username As String = "obd"'"sa"
+'	Public Password As String = "obd"'"sasa"
+	Public server As String="http://ebwinimak-001-site1.btempurl.com/api/operation"
+	'Public server As String="http://www.ebwini-eco.com:8008/four_season_api/api/operation"
+'	Public jdbcUrl As String = "jdbc:jtds:sqlserver://sql5066.site4now.net;DatabaseName=DB_A6F63B_ebwinimak"
+'	Public Username As String = "DB_A6F63B_ebwinimak_admin"
+'	Public Password As String = "Mahmoud@19732"
+	Public strSQLSelect As String = ""
+	Public strSQLSelectDetails As String = ""
+	Private gViewTop As Int = 0		
+	Public gID As Long = 0
+	Public usrid  As Long=0
+	Public sPK As String = ""
+	Public msg_title As String="الفصول الاربعه"
+	'	Dim rp As RuntimePermissions
+	End Sub
+Sub Globals
+	Private xui   As XUI
+	Private ProgressBar1 As ProgressBar
+ 	Private ButtonM2 As Button
+	Private LabelM2 As Label
+	Private strSQLDetails As EditText
+	Private EditText1 As EditText
+	Private EditText2 As EditText
+End Sub
+Sub Activity_Create(FirstTime As Boolean)
+	Starter.rp.CheckAndRequest(Starter.rp.PERMISSION_ACCESS_FINE_LOCATION)
+	Starter.rp.CheckAndRequest(Starter.rp.PERMISSION_WRITE_EXTERNAL_STORAGE)
+	Wait For Activity_PermissionResult (Permission As String, Result As Boolean)
+	If Result Then CallSubDelayed(Starter, "goo")
+	Activity.LoadLayout("login")
+	'connect
+	Dim p As Phone
+	EditText1.Background = p.GetResourceDrawable(17301528) 'Value of Android.R.drawable.editbox_background.
+	EditText2.Background = p.GetResourceDrawable(17301528) 'Value of Android.R.drawable.editbox_background.
+	ButtonM2.Visible = True
+	EditText1.Color = Colors.Transparent
+	EditText2.Color = Colors.Transparent
+End Sub
+
+Sub Activity_Resume
+
+  	'LoadGridRam
+	
+End Sub
+Sub Activity_Pause (UserClosed As Boolean)
+
+   	 
+
+End Sub
+Private Sub ButtonM2_Click
+	Dim job6 As HttpJob
+	job6.Initialize("get_user_id", Me)
+	Dim str6 As String =""&  server &"/get_user_id?user_name=" &  EditText1.Text & "&user_password=" & EditText2.Text
+	job6.Download(str6)
+End Sub
+Sub JobDone(Job As HttpJob)
+	Try
+		ProgressDialogHide
+		If Job.Success Then
+			If Job.JobName = "get_user_id" Then
+				Dim out As OutputStream
+				out = File.OpenOutput(File.DirRootExternal,Job.Tag,False )
+				File.Copy2(Job.GetInputStream, out)
+				File.Delete(File.DirRootExternal,Job.Tag)
+				out.Close
+				ParseJSON(Job.GetString)
+			End If
+					Else
+			Log( Job.ErrorMessage)
+		End If
+		Job.Release
+	Catch
+		Log(LastException.Message)
+	End Try
+
+End Sub
+Sub ParseJSON(jsonstring As String )
+	Try
+		Dim parser As JSONParser
+		jsonstring=jsonstring.Replace("[","").Replace("]","")
+		parser.Initialize(jsonstring)
+		Dim root As Map
+		root= parser.NextObject
+		usrid=root.Get("user_id")
+		
+		If usrid > 0 Then
+			'Activity.finish
+			StartActivity("main_page")
+			Else
+			Dim prompt As PromptDialog
+			prompt.Initialize("prompt")
+			prompt.DialogType=prompt.DIALOG_TYPE_WRONG
+			prompt.Title="دخول خاطيء"
+			prompt.AnimationEnable=True
+			prompt.ContentText=" تاكد من معلومات الدخول                      "'str
+			prompt.Show("موافق","الغاء")
+'				Msgbox("تاكد من معلومات الدخول","الفصول الاربعه")
+		End If
+		
+	Catch
+		Log(LastException.Message)
+	End Try
+End Sub
